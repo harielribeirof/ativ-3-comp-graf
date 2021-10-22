@@ -2,57 +2,46 @@
 //{
 //    glutInit(&argc, argv);
 
-//*****************************************************
-//
-// ObjetoComTransformacoesHierarquicas.cpp
-// Um programa OpenGL simples que abre uma janela GLUT, 
-// desenha e permite interagir com um objeto que é 
-// modelado através da utilização de transformações
-// hierárquicas.
-//
-// Marcelo Cohen e Isabel H. Manssour
-// Este código acompanha o livro 
-// "OpenGL - Uma Abordagem Prática e Objetiva"
-// 
-//*****************************************************
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <GL/glut.h>
 
 // Declaração de variáveis globais
-GLfloat tx = 0, ty = 0;
-GLfloat win = 25;
+GLfloat tx = 0, ty = -23;
+GLfloat win = 25, tamanhoPlayer = 1;
+GLint collision = 0;
 
 // Função para desenhar um "braço" do objeto
 // Função para desenhar a base do objeto 
 
-int colisao(GLfloat playerY){
-    if(playerY > 5.0f){
-        return 1;
+int colisao(GLfloat LinhaX, GLfloat comprimentoLinha, GLfloat alturaLinha){
+    if ((ty >= alturaLinha-1)&&(ty <= alturaLinha+1))
+    {        
+        if(tx + (tamanhoPlayer/2) >= LinhaX - (comprimentoLinha/2) && (tx - (tamanhoPlayer/2) <= LinhaX + (comprimentoLinha/2))){
+            return 1;
+        }
     }
-    return 0;
 }
 
 void DesenhaBase()
 {
 	glLineWidth(2);
 	glBegin(GL_LINE_LOOP);
-		glVertex2f(-0.5, -8.0);
-		glVertex2f(0.5, -8.0);
-		glVertex2f(0.5,-9.0);
-		glVertex2f(-0.5,-9.0);
+		glVertex2f(-tamanhoPlayer/2, tamanhoPlayer/2);
+		glVertex2f(tamanhoPlayer/2, tamanhoPlayer/2);
+		glVertex2f(tamanhoPlayer/2, -tamanhoPlayer/2);
+		glVertex2f(-tamanhoPlayer/2, -tamanhoPlayer/2);
 	glEnd();
 }
 
-void DesenhaLinha(GLfloat x1, GLfloat x2, GLfloat altura)
+void DesenhaLinha(GLfloat x, GLfloat comprimento, GLfloat altura)
 {
 	glLineWidth(2);
 	glBegin(GL_LINES);
         glColor3f(0.0f, 0.0f, 0.0f);
-		glVertex2f(x1, altura);
-		glVertex2f(x2, altura);
-	glEnd();
+		glVertex2f(x - (comprimento/2), altura);
+		glVertex2f(x + (comprimento/2), altura);
+	glEnd(); 
 }
            
 // Função callback de redesenho da janela de visualização
@@ -68,9 +57,9 @@ void Desenha(void)
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	// Desenha o "chão"
-    DesenhaLinha(-win, win, -0.0f);
-
-                               
+    DesenhaLinha(0, 25, 5.0f);
+    DesenhaLinha(0, 25, 10.0f);
+                      
 	// Desenha um objeto modelado com transformações hierárquicas
     
 	glPushMatrix();                   
@@ -81,10 +70,15 @@ void Desenha(void)
     
 	glScalef(2.5f,2.5f,1.0f);
 	glColor3f(1.0f,0.0f,0.0f);
-	DesenhaBase();
-    
+	DesenhaBase();  
 	glPopMatrix();   
-      
+    
+    glPushMatrix();
+
+    
+
+     
+    glPopMatrix();  
 	// Executa os comandos OpenGL 
 	glFlush();
 }
@@ -116,32 +110,40 @@ void AlteraTamanhoJanela(GLsizei w, GLsizei h)
 // Função callback chamada para gerenciar eventos de teclas especiais(F1,PgDn,...)
 void TeclasEspeciais(int key, int x, int y)
 {
-	// Move a base
-	if(key == GLUT_KEY_LEFT)
-	{
-		tx-=2;
-		if ( tx < -win+1 )
-			tx = -win+1; 
-	}
-	if(key == GLUT_KEY_RIGHT)
-	{
-		tx+=2;
-		if ( tx > win-1 )
-			tx = win-1; 
-	}
-    if(key == GLUT_KEY_UP)
-	{
-		ty+=2;
-		if ( ty > win+20 )
-			ty = win+20; 
-	}
-    if(key == GLUT_KEY_DOWN)
-	{
-		ty-=2;
-		if ( ty < -win+22 )
-			ty = -win+22; 
-	}                 
-                                                
+	
+    collision = colisao(0, 25, 10.0f); 
+    collision = colisao(0, 25, 5.0f); 
+    // Move a base
+    if(collision == 1){
+        tx = 0;
+        ty = -23;
+    } else{
+        if(key == GLUT_KEY_LEFT)
+        {
+            tx-=1;
+            if ( tx < -win )
+                tx = -win; 
+        }
+        if(key == GLUT_KEY_RIGHT)
+        {
+            tx+=1;
+            if ( tx > win )
+                tx = win; 
+        }
+        if(key == GLUT_KEY_UP)
+        {
+            ty+=1;
+            if ( ty > win )
+                ty = win; 
+        }
+        if(key == GLUT_KEY_DOWN)
+        {
+            ty-=1;
+            if ( ty < -win )
+                ty = -win; 
+        }        
+    }            
+    
 	glutPostRedisplay();
 }
 
@@ -156,12 +158,7 @@ void Teclado (unsigned char key, int x, int y)
 void Inicializa (void)
 {   
 	// Define a cor de fundo da janela de visualização como branca
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    
-	// Exibe mensagem que avisa como interagir
-	printf(" Setas para esquerda e para direita movimentam a base (vermelha)");
-	printf("\n Home e End rotacionam o braco 1 (verde)");
-	printf("\n PageUP e PageDn rotacionam o braco 2 (azul)");    
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);   
 }
 
 // Programa Principal 
@@ -171,7 +168,7 @@ int main(int argc, char** argv)
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);  
 	glutInitWindowPosition(5,5);     
 	glutInitWindowSize(400,600);  
-	glutCreateWindow("Desenho de objeto modelado com transformações hierárquicas"); 
+	glutCreateWindow("Atividade 3"); 
  
 	// Registra a função callback de redesenho da janela de visualização
 	glutDisplayFunc(Desenha);  
@@ -187,7 +184,6 @@ int main(int argc, char** argv)
 
 	// Chama a função responsável por fazer as inicializações 
 	Inicializa(); 
-
     
 	// Inicia o processamento e aguarda interações do usuário
 	glutMainLoop();
