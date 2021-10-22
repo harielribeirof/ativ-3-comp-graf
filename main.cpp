@@ -9,7 +9,7 @@
 // Declaração de variáveis globais
 GLfloat tx = 0, ty = -23;
 GLfloat win = 25, tamanhoPlayer = 1;
-GLint collision = 0;
+GLint collision = 0, batidas = 0;
 
 // Função para desenhar um "braço" do objeto
 // Função para desenhar a base do objeto 
@@ -58,7 +58,7 @@ void Desenha(void)
 
 	// Desenha o "chão"
     DesenhaLinha(0, 25, 5.0f);
-    DesenhaLinha(0, 25, 10.0f);
+    DesenhaLinha(20, 25, 10.0f);
                       
 	// Desenha um objeto modelado com transformações hierárquicas
     
@@ -71,14 +71,16 @@ void Desenha(void)
 	glScalef(2.5f,2.5f,1.0f);
 	glColor3f(1.0f,0.0f,0.0f);
 	DesenhaBase();  
-	glPopMatrix();   
-    
-    glPushMatrix();
+	glPopMatrix();
 
-    
-
-     
-    glPopMatrix();  
+    if(collision == 1){
+        batidas++;
+        if(batidas == 2){
+            tx = 0;
+            ty = -23;
+            batidas = 0;
+        }
+    }    
 	// Executa os comandos OpenGL 
 	glFlush();
 }
@@ -111,38 +113,34 @@ void AlteraTamanhoJanela(GLsizei w, GLsizei h)
 void TeclasEspeciais(int key, int x, int y)
 {
 	
-    collision = colisao(0, 25, 10.0f); 
+    collision = colisao(20, 25, 10.0f); 
     collision = colisao(0, 25, 5.0f); 
     // Move a base
-    if(collision == 1){
-        tx = 0;
-        ty = -23;
-    } else{
-        if(key == GLUT_KEY_LEFT)
-        {
-            tx-=1;
-            if ( tx < -win )
-                tx = -win; 
-        }
-        if(key == GLUT_KEY_RIGHT)
-        {
-            tx+=1;
-            if ( tx > win )
-                tx = win; 
-        }
-        if(key == GLUT_KEY_UP)
-        {
-            ty+=1;
-            if ( ty > win )
-                ty = win; 
-        }
-        if(key == GLUT_KEY_DOWN)
-        {
-            ty-=1;
-            if ( ty < -win )
-                ty = -win; 
-        }        
-    }            
+    
+    if(key == GLUT_KEY_LEFT)
+    {
+        tx-=1;
+        if ( tx < -win )
+            tx = -win; 
+    }
+    if(key == GLUT_KEY_RIGHT)
+    {
+        tx+=1;
+        if ( tx > win )
+            tx = win; 
+    }
+    if(key == GLUT_KEY_UP)
+    {
+        ty+=1;
+        if ( ty > win )
+            ty = win; 
+    }
+    if(key == GLUT_KEY_DOWN)
+    {
+        ty-=1;
+        if ( ty < -win )
+            ty = -win; 
+    }                    
     
 	glutPostRedisplay();
 }
@@ -167,7 +165,7 @@ int main(int argc, char** argv)
     glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);  
 	glutInitWindowPosition(5,5);     
-	glutInitWindowSize(400,600);  
+	glutInitWindowSize(600,900);  
 	glutCreateWindow("Atividade 3"); 
  
 	// Registra a função callback de redesenho da janela de visualização
