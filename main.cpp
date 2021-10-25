@@ -56,9 +56,34 @@ void Desenha(void)
 	// de fundo definida previamente
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	// Desenha o "chão"
-    DesenhaLinha(0, 25, 5.0f);
-    DesenhaLinha(20, 25, 10.0f);
+	// Desenha as linhas
+	DesenhaLinha(20, 10, -16.0f);
+	DesenhaLinha(-9, 35, -16.0f);
+
+	DesenhaLinha(-20, 10, -12.0f);
+	DesenhaLinha(9, 35, -12.0f);
+	
+	DesenhaLinha(15, 22, -8.0f);
+	DesenhaLinha(-15, 25, -8.0f);
+
+	DesenhaLinha(-20, 10, -4.0f);
+	DesenhaLinha(9, 35, -4.0f);
+
+	DesenhaLinha(0, 40, 0.0f);
+
+	DesenhaLinha(15, 22, 4.0f);
+	DesenhaLinha(-15, 25, 4.0f);
+
+	DesenhaLinha(20, 10, 8.0f);
+	DesenhaLinha(-9, 35, 8.0f);
+
+	DesenhaLinha(-20, 10, 12.0f);
+	DesenhaLinha(9, 35, 12.0f);
+
+	DesenhaLinha(0, 40, 16.0f);
+
+	DesenhaLinha(20, 10, 20.0f);
+	DesenhaLinha(-9, 35, 20.0f);
                       
 	// Desenha um objeto modelado com transformações hierárquicas
     
@@ -75,7 +100,7 @@ void Desenha(void)
 
     if(collision == 1){
         batidas++;
-        if(batidas == 2){
+        if(batidas == 3){
             tx = 0;
             ty = -23;
             batidas = 0;
@@ -112,9 +137,33 @@ void AlteraTamanhoJanela(GLsizei w, GLsizei h)
 // Função callback chamada para gerenciar eventos de teclas especiais(F1,PgDn,...)
 void TeclasEspeciais(int key, int x, int y)
 {
+	collision = colisao(20, 10, -16.0f);
+	collision = colisao(-9, 35, -16.0f);
+
+	collision = colisao(-20, 10, -12.0f);
+	collision = colisao(9, 35, -12.0f);
 	
-    collision = colisao(20, 25, 10.0f); 
-    collision = colisao(0, 25, 5.0f); 
+	collision = colisao(15, 22, -8.0f);
+	collision = colisao(-15, 25, -8.0f);
+
+	collision = colisao(-20, 10, -4.0f);
+	collision = colisao(9, 35, -4.0f);
+
+	collision = colisao(0, 40, 0.0f);
+
+	collision = colisao(15, 22, 4.0f);
+	collision = colisao(-15, 25, 4.0f);
+
+	collision = colisao(20, 10, 8.0f);
+	collision = colisao(-9, 35, 8.0f);
+
+	collision = colisao(-20, 10, 12.0f);
+	collision = colisao(9, 35, 12.0f);
+
+	collision = colisao(0, 40, 16.0f);
+
+	collision = colisao(20, 10, 20.0f);
+	collision = colisao(-9, 35, 20.0f);
     // Move a base
     
     if(key == GLUT_KEY_LEFT)
