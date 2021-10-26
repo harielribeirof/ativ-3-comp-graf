@@ -1,9 +1,6 @@
-//int main(int argc, char** argv)
-//{
-//    glutInit(&argc, argv);
-
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
 #include <GL/glut.h>
 
 // Declaração de variáveis globais
@@ -11,9 +8,8 @@ GLfloat tx = 0, ty = -23;
 GLfloat win = 25, tamanhoPlayer = 1;
 GLint collision = 0, batidas = 0;
 
-// Função para desenhar um "braço" do objeto
-// Função para desenhar a base do objeto 
 
+// Função para calcular colisões com as linhas
 int colisao(GLfloat LinhaX, GLfloat comprimentoLinha, GLfloat alturaLinha){
     if ((ty >= alturaLinha-1)&&(ty <= alturaLinha+1))
     {        
@@ -23,10 +19,31 @@ int colisao(GLfloat LinhaX, GLfloat comprimentoLinha, GLfloat alturaLinha){
     }
 }
 
-void DesenhaBase()
+// Desenha texto na tela
+void DesenhaTexto(char *string, int x, int y)
 {
-	glLineWidth(2);
+  	glPushMatrix();
+        // Posição no universo onde o texto será colocado
+        glRasterPos2f(x, y);
+        // Exibe caracter a caracter
+        while(*string)
+             glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18,*string++);
+	glPopMatrix();
+}
+
+// Função para desenhar o player
+void desenhaPlayer()
+{
+	glLineWidth(3);
 	glBegin(GL_LINE_LOOP);
+		glColor3f(0.0f, 0.0f, 0.0f);
+		glVertex2f(-tamanhoPlayer/2, tamanhoPlayer/2);
+		glVertex2f(tamanhoPlayer/2, tamanhoPlayer/2);
+		glVertex2f(tamanhoPlayer/2, -tamanhoPlayer/2);
+		glVertex2f(-tamanhoPlayer/2, -tamanhoPlayer/2);
+	glEnd();
+	glBegin(GL_QUADS);
+		glColor3f(1.0f, 0.0f, 0.0f);
 		glVertex2f(-tamanhoPlayer/2, tamanhoPlayer/2);
 		glVertex2f(tamanhoPlayer/2, tamanhoPlayer/2);
 		glVertex2f(tamanhoPlayer/2, -tamanhoPlayer/2);
@@ -34,6 +51,7 @@ void DesenhaBase()
 	glEnd();
 }
 
+// Função para desenhar as linhas
 void DesenhaLinha(GLfloat x, GLfloat comprimento, GLfloat altura)
 {
 	glLineWidth(2);
@@ -43,7 +61,19 @@ void DesenhaLinha(GLfloat x, GLfloat comprimento, GLfloat altura)
 		glVertex2f(x + (comprimento/2), altura);
 	glEnd(); 
 }
-           
+
+void DesenhaObjetivo()
+{
+	glLineWidth(2);
+	glBegin(GL_QUADS);
+        glColor3f(1.0f, 0.0f, 0.0f);
+		glVertex2f(9.0f, 21.0f);
+		glVertex2f(14.0f, 21.0f);
+		glVertex2f(14.0f, 23.0f);
+		glVertex2f(9.0f, 23.0f);
+	glEnd(); 
+}
+
 // Função callback de redesenho da janela de visualização
 void Desenha(void)
 {
@@ -51,12 +81,13 @@ void Desenha(void)
 	glMatrixMode(GL_MODELVIEW);
 	// Inicializa a matriz de transformação corrente
 	glLoadIdentity();
-     
+
 	// Limpa a janela de visualização com a cor  
 	// de fundo definida previamente
 	glClear(GL_COLOR_BUFFER_BIT);
-
-	// Desenha as linhas
+	// Alcançar o objetivo
+	
+	// Desenho das linhas
 	DesenhaLinha(20, 10, -16.0f);
 	DesenhaLinha(-9, 35, -16.0f);
 
@@ -83,29 +114,40 @@ void Desenha(void)
 	DesenhaLinha(0, 40, 16.0f);
 
 	DesenhaLinha(20, 10, 20.0f);
-	DesenhaLinha(-9, 35, 20.0f);
-                      
-	// Desenha um objeto modelado com transformações hierárquicas
-    
-	glPushMatrix();                   
-                    
+	DesenhaLinha(-9, 35, 20.0f);   
+
+	// Desenha objetivo
+	DesenhaObjetivo();
+
+	// Movimento do Player               
 	glTranslatef(tx, ty, 0.0f);
     
-	glPushMatrix();
-    
-	glScalef(2.5f,2.5f,1.0f);
+	// Desenho do player
+	glScalef(2.5f,2.5f,0.0f);
 	glColor3f(1.0f,0.0f,0.0f);
-	DesenhaBase();  
-	glPopMatrix();
+	desenhaPlayer();  
 
+	DesenhaObjetivo();
+	glColor3f(0.0f,0.0f,0.0f);
+
+	// Verificação de quantidade de colisões
     if(collision == 1){
         batidas++;
-        if(batidas == 3){
+        if(batidas == 2){
             tx = 0;
             ty = -23;
             batidas = 0;
+			glLoadIdentity();
+			DesenhaTexto("DERROTA!!", -5, 23);
         }
-    }    
+    }
+	if(ty >= 20.0f && ((tx >= 9.0f)&&(tx<=14.0f))){
+		tx = 0; ty = -23;
+		glLoadIdentity();
+		DesenhaTexto("VITORIA!!", -5, 23);
+		
+	}  
+	 
 	// Executa os comandos OpenGL 
 	glFlush();
 }
@@ -137,6 +179,7 @@ void AlteraTamanhoJanela(GLsizei w, GLsizei h)
 // Função callback chamada para gerenciar eventos de teclas especiais(F1,PgDn,...)
 void TeclasEspeciais(int key, int x, int y)
 {
+	// Calculo colisões
 	collision = colisao(20, 10, -16.0f);
 	collision = colisao(-9, 35, -16.0f);
 
@@ -164,8 +207,8 @@ void TeclasEspeciais(int key, int x, int y)
 
 	collision = colisao(20, 10, 20.0f);
 	collision = colisao(-9, 35, 20.0f);
-    // Move a base
-    
+
+    // Movimento do player
     if(key == GLUT_KEY_LEFT)
     {
         tx-=1;
