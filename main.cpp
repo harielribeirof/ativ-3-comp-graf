@@ -1,17 +1,25 @@
+// ATIVIDADE 3 - LABIRINTO - COMPUTAÇÃO GRÁFICA
+// ALUNO: Hariel Ribeiro
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <string>
 #include <GL/glut.h>
+
+// CONSTANTES
+#define VELOCIDADE 1
+#define ESQUERDA 4
+#define DIREITA 6
+#define CIMA 8
+#define BAIXO 2
 
 // Declaração de variáveis globais
 GLfloat tx = 0, ty = -23;
 GLfloat win = 25, tamanhoPlayer = 1;
-GLint collision = 0, batidas = 0, corJanela = 0, corLabirinto = 3, corPlayer = 6;
-
+GLint collision = 0, batidas = 0, corJanela = 0, corLabirinto = 3, corPlayer = 6,  last_move;
 
 // Função para calcular colisões com as linhas
 int colisao(GLfloat LinhaX, GLfloat comprimentoLinha, GLfloat alturaLinha){
-    if ((ty >= alturaLinha-1)&&(ty <= alturaLinha+1))
+    if ((ty+(tamanhoPlayer) >= alturaLinha)&&(ty-(tamanhoPlayer) <= alturaLinha))
     {        
         if(tx + (tamanhoPlayer/2) >= LinhaX - (comprimentoLinha/2) && (tx - (tamanhoPlayer/2) <= LinhaX + (comprimentoLinha/2))){
             return 1;
@@ -32,7 +40,7 @@ void DesenhaTexto(char *string, int x, int y)
 }
 
 // Função para desenhar o player
-void desenhaPlayer()
+void DesenhaPlayer()
 {
 	glLineWidth(3);
 	glBegin(GL_LINE_LOOP);
@@ -42,6 +50,7 @@ void desenhaPlayer()
 		glVertex2f(tamanhoPlayer/2, -tamanhoPlayer/2);
 		glVertex2f(-tamanhoPlayer/2, -tamanhoPlayer/2);
 	glEnd();
+	// mudança de cor do Player
 	switch (corPlayer)
 	{
 	case 6:
@@ -66,6 +75,7 @@ void desenhaPlayer()
 void DesenhaLinha(GLfloat x, GLfloat comprimento, GLfloat altura)
 {
 	glLineWidth(2);
+	// mudança de cor do Labirinto
 	switch (corLabirinto)
 	{
 	case 3:
@@ -84,6 +94,7 @@ void DesenhaLinha(GLfloat x, GLfloat comprimento, GLfloat altura)
 	glEnd(); 
 }
 
+// Função para desenhar o objetivo final
 void DesenhaObjetivo()
 {
 	glLineWidth(2);
@@ -107,7 +118,8 @@ void Desenha(void)
 	// Limpa a janela de visualização com a cor  
 	// de fundo definida previamente
 	glClear(GL_COLOR_BUFFER_BIT);
-	// Alcançar o objetivo
+	
+	// Mudança de cor da janela
 	switch (corJanela)
 	{
 	case 0:
@@ -119,7 +131,8 @@ void Desenha(void)
 	case 2:
 		glClearColor(1.0f, 1.0f, 0.0f, 1.0f); 
 		break;
-	} 
+	}
+
 	// Desenho das linhas
 	DesenhaLinha(20, 10, -16.0f);
 	DesenhaLinha(-9, 35, -16.0f);
@@ -157,15 +170,15 @@ void Desenha(void)
     
 	// Desenho do player
 	glScalef(2.5f,2.5f,0.0f);
-	desenhaPlayer();  
+	DesenhaPlayer();  
 
-	DesenhaObjetivo();
+	// Cor do texto - vitória ou derrota
 	glColor3f(0.0f,0.0f,0.0f);
 
 	// Verificação de quantidade de colisões
     if(collision == 1){
         batidas++;
-        if(batidas == 2){
+        if(batidas == 3){
             tx = 0;
             ty = -23;
             batidas = 0;
@@ -179,7 +192,6 @@ void Desenha(void)
 		tx = 0; ty = -23;
 		glLoadIdentity();
 		DesenhaTexto("VITORIA!!", -5, 23);
-		
 	}  
 	 
 	// Executa os comandos OpenGL 
@@ -242,35 +254,66 @@ void TeclasEspeciais(int key, int x, int y)
 	collision = colisao(20, 10, 20.0f);
 	collision = colisao(-9, 35, 20.0f);
 
+
     // Movimento do player
-    if(key == GLUT_KEY_LEFT)
-    {
-        tx-=1;
-        if ( tx < -win )
-            tx = -win; 
-    }
-    if(key == GLUT_KEY_RIGHT)
-    {
-        tx+=1;
-        if ( tx > win )
-            tx = win; 
-    }
-    if(key == GLUT_KEY_UP)
-    {
-        ty+=1;
-        if ( ty > win )
-            ty = win; 
-    }
-    if(key == GLUT_KEY_DOWN)
-    {
-        ty-=1;
-        if ( ty < -win )
-            ty = -win; 
-    }                    
+	// Verificação se colidiu
+	if(collision == 0){
+		if(key == GLUT_KEY_LEFT)
+		{
+			tx-=VELOCIDADE;
+			last_move = ESQUERDA;
+			
+			if ( tx < -win )
+				tx = -win; 
+		}
+		if(key == GLUT_KEY_RIGHT)
+		{
+			tx+=VELOCIDADE;
+			last_move = DIREITA;
+			
+			if ( tx > win )
+				tx = win; 
+		}
+		if(key == GLUT_KEY_UP)
+		{
+			ty+=VELOCIDADE;		
+			last_move = CIMA;
+			if ( ty > win )
+				ty = win; 
+		}
+		if(key == GLUT_KEY_DOWN)
+		{
+			ty-=VELOCIDADE;
+			last_move = BAIXO;
+			
+			if ( ty < -win )
+				ty = -win; 
+		} 
+	}else{		// Caso tenha colidido, faz o movimento oposto ao ultimo movimento feito
+		switch (last_move)
+		{
+		case ESQUERDA:
+			tx += VELOCIDADE;
+			break;
+		case DIREITA:
+			tx -= VELOCIDADE;
+			break;
+		case CIMA:
+			ty -= VELOCIDADE;
+			break;
+		case BAIXO:
+			ty += VELOCIDADE;
+			break;
+		
+		default:
+			break;
+		}
+	}                  
     
 	glutPostRedisplay();
 }
 
+// Opções de modificação de cores da Janela
 void MenuJanela(int op)
 {
    switch(op) {
@@ -287,7 +330,7 @@ void MenuJanela(int op)
     glutPostRedisplay();
 }
 
-// Gerenciamento do menu com as opções de cores
+// Opções de modificação de cores do labirinto
 void MenuLabirinto(int op)
 {
    switch(op) {
@@ -304,6 +347,7 @@ void MenuLabirinto(int op)
     glutPostRedisplay();
 }
 
+// Opções de modificação de cores do Player
 void MenuPlayer(int op)
 {
    switch(op) {
@@ -319,6 +363,7 @@ void MenuPlayer(int op)
     }
     glutPostRedisplay();
 }
+
 // Gerenciamento do menu principal
 void MenuPrincipal(int op)
 {
@@ -330,7 +375,7 @@ void CriaMenu()
     int menu, submenu1, submenu2, submenu3;
 
 	submenu1 = glutCreateMenu(MenuJanela);
-	glutAddMenuEntry("Branco",0);
+	glutAddMenuEntry("Cor 1",0);
 	glutAddMenuEntry("Cor 2",1);
 	glutAddMenuEntry("Cor 3",2);
 
@@ -386,21 +431,16 @@ int main(int argc, char** argv)
 	glutCreateWindow("Atividade 3"); 
  
 	// Registra a função callback de redesenho da janela de visualização
-	glutDisplayFunc(Desenha);  
-	
+	glutDisplayFunc(Desenha); 
 	// Registra a função callback de redimensionamento da janela de visualização
 	glutReshapeFunc(AlteraTamanhoJanela);    
-
 	glutMouseFunc(GerenciaMouse);
 	// Registra a função callback para tratamento das teclas especiais
 	glutSpecialFunc(TeclasEspeciais);
-
 	// Registra a função callback para tratamento das teclas ASCII
 	glutKeyboardFunc (Teclado);
-
 	// Chama a função responsável por fazer as inicializações 
-	Inicializa(); 
-    
+	Inicializa();
 	// Inicia o processamento e aguarda interações do usuário
 	glutMainLoop();
 
