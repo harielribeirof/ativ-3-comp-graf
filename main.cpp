@@ -6,7 +6,7 @@
 // Declaração de variáveis globais
 GLfloat tx = 0, ty = -23;
 GLfloat win = 25, tamanhoPlayer = 1;
-GLint collision = 0, batidas = 0;
+GLint collision = 0, batidas = 0, corJanela = 0, corLabirinto = 3, corPlayer = 6;
 
 
 // Função para calcular colisões com as linhas
@@ -42,8 +42,19 @@ void desenhaPlayer()
 		glVertex2f(tamanhoPlayer/2, -tamanhoPlayer/2);
 		glVertex2f(-tamanhoPlayer/2, -tamanhoPlayer/2);
 	glEnd();
-	glBegin(GL_QUADS);
+	switch (corPlayer)
+	{
+	case 6:
 		glColor3f(1.0f, 0.0f, 0.0f);
+		break;
+	case 7:
+		glColor3f(0.0f, 1.0f, 0.0f);
+		break;
+	case 8:
+		glColor3f(0.0f, 0.0f, 1.0f);
+		break;
+	} 
+	glBegin(GL_QUADS);
 		glVertex2f(-tamanhoPlayer/2, tamanhoPlayer/2);
 		glVertex2f(tamanhoPlayer/2, tamanhoPlayer/2);
 		glVertex2f(tamanhoPlayer/2, -tamanhoPlayer/2);
@@ -55,8 +66,19 @@ void desenhaPlayer()
 void DesenhaLinha(GLfloat x, GLfloat comprimento, GLfloat altura)
 {
 	glLineWidth(2);
+	switch (corLabirinto)
+	{
+	case 3:
+		glColor3f(0.0f, 0.0f, 0.0f);
+		break;
+	case 4:
+		glColor3f(1.0f, 0.0f, 0.0f);
+		break;
+	case 5:
+		glColor3f(0.0f, 1.0f, 0.0f);
+		break;
+	} 
 	glBegin(GL_LINES);
-        glColor3f(0.0f, 0.0f, 0.0f);
 		glVertex2f(x - (comprimento/2), altura);
 		glVertex2f(x + (comprimento/2), altura);
 	glEnd(); 
@@ -66,7 +88,7 @@ void DesenhaObjetivo()
 {
 	glLineWidth(2);
 	glBegin(GL_QUADS);
-        glColor3f(1.0f, 0.0f, 0.0f);
+		glColor3f(1.0f, 0.0f, 0.0f);
 		glVertex2f(9.0f, 21.0f);
 		glVertex2f(14.0f, 21.0f);
 		glVertex2f(14.0f, 23.0f);
@@ -86,7 +108,18 @@ void Desenha(void)
 	// de fundo definida previamente
 	glClear(GL_COLOR_BUFFER_BIT);
 	// Alcançar o objetivo
-	
+	switch (corJanela)
+	{
+	case 0:
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); 
+		break;
+	case 1:
+		glClearColor(1.0f, 0.0f, 1.0f, 1.0f); 
+		break;
+	case 2:
+		glClearColor(1.0f, 1.0f, 0.0f, 1.0f); 
+		break;
+	} 
 	// Desenho das linhas
 	DesenhaLinha(20, 10, -16.0f);
 	DesenhaLinha(-9, 35, -16.0f);
@@ -124,7 +157,6 @@ void Desenha(void)
     
 	// Desenho do player
 	glScalef(2.5f,2.5f,0.0f);
-	glColor3f(1.0f,0.0f,0.0f);
 	desenhaPlayer();  
 
 	DesenhaObjetivo();
@@ -239,6 +271,97 @@ void TeclasEspeciais(int key, int x, int y)
 	glutPostRedisplay();
 }
 
+void MenuJanela(int op)
+{
+   switch(op) {
+            case 0:
+                     corJanela = 0;
+                     break;
+            case 1:
+                     corJanela = 1;
+                     break;
+            case 2:
+                     corJanela = 2;
+                     break;
+    }
+    glutPostRedisplay();
+}
+
+// Gerenciamento do menu com as opções de cores
+void MenuLabirinto(int op)
+{
+   switch(op) {
+            case 3:
+                     corLabirinto = 3;
+                     break;
+            case 4:
+                     corLabirinto = 4;
+                     break;
+            case 5:
+                     corLabirinto = 5;
+                     break;
+    }
+    glutPostRedisplay();
+}
+
+void MenuPlayer(int op)
+{
+   switch(op) {
+            case 6:
+                     corPlayer = 6;
+                     break;
+            case 7:
+                     corPlayer = 7;
+                     break;
+            case 8:
+                     corPlayer = 8;
+                     break;
+    }
+    glutPostRedisplay();
+}
+// Gerenciamento do menu principal
+void MenuPrincipal(int op)
+{
+}
+
+// Criacao do Menu
+void CriaMenu()
+{
+    int menu, submenu1, submenu2, submenu3;
+
+	submenu1 = glutCreateMenu(MenuJanela);
+	glutAddMenuEntry("Branco",0);
+	glutAddMenuEntry("Cor 2",1);
+	glutAddMenuEntry("Cor 3",2);
+
+    submenu2 = glutCreateMenu(MenuLabirinto);
+	glutAddMenuEntry("Cor 1",3);
+	glutAddMenuEntry("Cor 2",4);
+	glutAddMenuEntry("Cor 3",5);
+
+	submenu3 = glutCreateMenu(MenuPlayer);
+	glutAddMenuEntry("Cor 1",6);
+	glutAddMenuEntry("Cor 2",7);
+	glutAddMenuEntry("Cor 3",8);
+
+    menu = glutCreateMenu(MenuPrincipal);
+	glutAddSubMenu("Cores da janela",submenu1);
+    glutAddSubMenu("Cores do labirinto",submenu2);
+	glutAddSubMenu("Cores do player",submenu3);
+
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
+}
+
+// Função callback chamada para gerenciar eventos do mouse
+void GerenciaMouse(int button, int state, int x, int y)
+{
+    if (button == GLUT_RIGHT_BUTTON)
+         if (state == GLUT_DOWN)
+            CriaMenu();
+
+    glutPostRedisplay();
+}
+
 // Função callback chamada para gerenciar eventos de teclas
 void Teclado (unsigned char key, int x, int y)
 {
@@ -250,7 +373,7 @@ void Teclado (unsigned char key, int x, int y)
 void Inicializa (void)
 {   
 	// Define a cor de fundo da janela de visualização como branca
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);   
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f); 
 }
 
 // Programa Principal 
@@ -268,6 +391,7 @@ int main(int argc, char** argv)
 	// Registra a função callback de redimensionamento da janela de visualização
 	glutReshapeFunc(AlteraTamanhoJanela);    
 
+	glutMouseFunc(GerenciaMouse);
 	// Registra a função callback para tratamento das teclas especiais
 	glutSpecialFunc(TeclasEspeciais);
 
