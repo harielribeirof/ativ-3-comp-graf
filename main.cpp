@@ -141,6 +141,8 @@ void Desenha(void)
 			DesenhaTexto("DERROTA!!", -5, 23);
         }
     }
+
+	// Verificação de sucesso
 	if(ty >= 20.0f && ((tx >= 9.0f)&&(tx<=14.0f))){
 		tx = 0; ty = -23;
 		glLoadIdentity();
